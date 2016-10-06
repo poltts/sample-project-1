@@ -39,20 +39,28 @@ function create_orders_post_type(){
 	) );
 }
 
-add_action( 'save_post', 'save_orders', 10, 3 );
-function save_orders($post_id,$post, $update){
-	$post_type = get_post_type($post_id);
-	if(get_post_type($post_id) != 'products') return;
+add_action( 'save_post', 'save_orders');
+function save_orders($post_id){
 
-	wp_insert_post( array(
-     'post_type' => 'orders'
-	) );
-	$latest_id = get_posts("post_type=orders&numberposts=1");
-	$idclient = get_post_meta( $post_id, 'id_client', true );
-	$idproduct = get_post_meta( $post_id, 'id_product', true );
-	 
-	update_post_meta( $latest_id, 'id_client', $idclient );
-	update_post_meta( $latest_id, 'id_product', $idproduct );
+	if( get_post_type($post_id) != 'products' || wp_is_post_revision( $post_id ) ) return;
+
+	if($_POST){
+
+		$idProduct    = get_post_meta( $post_id, 'id_product', true );
+		$idClient     = get_post_meta( $post_id, 'id_client', true );
+		$productTitle = get_the_title( $post_id );
+		
+		wp_insert_post( array(
+			'post_title' => $productTitle,
+			'post_type' => 'orders',
+			'post_status' => 'publish',
+			'meta_value' => array('id_client', $idclient, 'id_product' => $idProduct )
+		) );
+
+	
+	}
+
+
  
 }
 ?>
